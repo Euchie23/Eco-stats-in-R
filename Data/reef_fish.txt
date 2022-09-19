@@ -1,0 +1,11 @@
+country	richness
+Indonesia	1820
+Australia	1627
+Philippines	1525
+Papua_New_Guniea	1494
+Republic_of_Belau	1254
+Japan	1315
+Taiwan	1172
+New_Caledonia	1007
+Fiji	919
+Federated_States_of Micronesia	900
