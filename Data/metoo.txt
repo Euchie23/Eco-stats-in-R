@@ -1,0 +1,6 @@
+state	male_fulltime	male_other	female_fulltime	female_other
+Maine	4194	1508	3337	1148
+Massachusetts	5505	1547	4486	1248
+NewHampshire	4996	1689	3848	1260
+Vermont	4210	1475	3516	1201
+Taiwan	1806	n/a	1510	n/a

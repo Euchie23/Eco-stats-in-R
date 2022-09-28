@@ -1,0 +1,2 @@
+Southern_TW	Northern_TW	Eastern_TW	Ludao	Lanyu	Xiaoliuqiu	Penghu_North	Penghu_East	Penghu_Inner	Penghu South	Dongsha	Taiping	Northern_Is
+280	136	210	250	248	239	107	84	75	99	229	163	112
