@@ -1,0 +1,70 @@
+---
+title: "Practice 2.2"
+author: "Euchie Jn Pierre"
+date: "2022-10-02"
+output: html_document
+---
+
+### This is homework is to practice using the dplyr and tidyr packages to manipulate and modify the dataset
+```{r,  eval=T, include=FALSE}
+#loading libraries ----
+library(dplyr)
+library(tidyverse)
+library(knitr)
+```
+
+
+
+
+
+## **Importing the dataset using URL for reproducibility**
+```{r,  eval=T}
+# Preparing data----
+rairuoho <- read.delim ('https://www.dipintothereef.com/uploads/3/7/3/5/37359245/rairuoho.txt')
+head(rairuoho)
+```
+
+
+
+
+
+## **Manipulating data**
+### Changing a name in the dataset
+```{r,  eval=T, echo=TRUE}
+# replacing 'nutrient' with 'enriched' within treatment
+rairuoho_1 <- rairuoho %>% mutate(treatment = replace(treatment, treatment == 'nutrient', 'enriched'))
+head(rairuoho_1)
+```
+
+### Reformatting a variable
+```{r,  eval=T, echo=TRUE}
+# reformatting 'day' as a single variable containing 6 levels and placing values into new 'length' variable.
+rairuoho_1<-rairuoho_1%>%pivot_longer(day3:day8,names_to = "day", values_to = "length")
+head(rairuoho_1)
+```
+
+### Uniting two variables
+```{r,  eval=T,echo=TRUE}
+# combining two columns (spatial1 and spatial2) into one column
+rairuoho_2 <- rairuoho_1 %>%  unite("spatial coordinates", spatial1:spatial2, sep = "_")
+head(rairuoho_2)
+```
+
+### Removing variables in the dataset
+```{r,  eval=T, echo=TRUE}
+# removing variables 'row' and 'column'
+rairuoho_3 <- dplyr::select(rairuoho_2, -row, -column)
+head(rairuoho_3)
+```
+
+
+
+
+
+## **The combination of the above code using the 'PIPE operator' for conciseness**
+```{r,  eval=T, echo=TRUE}
+# Combination of above code using the PIPE operator----
+rairuoho_3_1 <- rairuoho %>% mutate(treatment = replace(treatment, treatment == 'nutrient', 'enriched'))%>%pivot_longer(day3:day8,names_to = "day", values_to = "length")%>%  unite("spatial coordinates", spatial1:spatial2, sep = "_")%>% dplyr::select(-row, -column)
+head(rairuoho_3_1)
+```
+
