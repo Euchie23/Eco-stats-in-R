@@ -1,0 +1,78 @@
+---
+title: "Practice 3.2"
+author: "Euchie Jn Pierre"
+date: "2022-10-08"
+output: html_document
+---
+
+### This homework is to learn different data types and structures
+```{r,  eval=T, include=FALSE}
+#loading libraries ----
+library(dplyr)
+library(tidyr)
+```
+
+## **Constructing a dataframe**
+```{r,  eval=T}
+# Constructing dataframe----
+subjects   <- c("subject_1", "subject_2", "subject_3","subject_4", "subject_5" )
+before_diet<- c(104, 95, 87, 77, 112 )
+after_diet <- c(96, 91, 81, 75, 118)
+bubbleTdiet0 <- data.frame(subjects, before_diet, after_diet)
+head(bubbleTdiet0)
+```
+
+## **Reformatting a dataframe**
+```{r,  eval=T, echo=TRUE}
+#reformating dataframe---
+bubbleTdiet1<-data.frame(bubbleTdiet0%>%pivot_longer(before_diet:after_diet,names_to = "time_of_measurement", values_to = "weight"))
+bubbleTdiet<- mutate_at(bubbleTdiet1, vars(time_of_measurement), as.factor)# putting time of measurement column as factor with two levels.
+head(bubbleTdiet)
+typeof(bubbleTdiet$weight)
+attributes(bubbleTdiet$time_of_measurement)
+```
+
+## **Constructing elements to place into the list**
+### Character and numeric vectors
+```{r,  eval=T, echo=TRUE}
+# constructing character and numeric vectors (weight loss %) from 'bubbleTdiet'----
+char_vec <- bubbleTdiet0$subjects[c(1:5)]
+num_vec <- as.numeric(round((bubbleTdiet0$before_diet-bubbleTdiet0$after_diet)/bubbleTdiet0$before_diet*100, digits = 0)) # rounding of the decimal points to '0'
+num_vec_p<- paste(num_vec,"%",sep = "")#adding '%' sign to figures
+char_vec
+num_vec
+num_vec_p
+typeof(char_vec)
+typeof(num_vec)
+typeof(num_vec_p)
+```
+
+### Table with two columns
+```{r,  eval=T,echo=TRUE}
+# constructing table with two columns char_vec and num_vec.
+weight_loss_tbl <- data.frame(char_vec, num_vec)
+colnames(weight_loss_tbl) <- c('subjects','weight_loss')
+head(weight_loss_tbl)
+```
+
+## **Storing previously constructed elements into a list**
+```{r,  eval=T, echo=TRUE}
+# storing 4 elements in a list called WEIGHT_LOSS
+WEIGHT_LOSS <- list(char_vec=char_vec,num_vec=num_vec, num_vec_p=num_vec_p,weight_loss_tbl=weight_loss_tbl)
+WEIGHT_LOSS
+```
+
+### Message
+```{r,  eval=T, echo=TRUE}
+#constructing a message to add to the list BUBBLE_DIET 
+message <- 'Manipulating data in R is so much fun!'
+```
+
+
+## **Storing 'WEIGHT_LOSS' list and 'bubbleTdiet' dataframe and 'message' into another list**
+```{r,  eval=T, echo=TRUE}
+# Storing two elements in a list called BUBBLE_DIET----
+BUBBLE_DIET <- list(bubbleTdiet=bubbleTdiet,WEIGHT_LOSS=WEIGHT_LOSS, message=message)
+BUBBLE_DIET
+```
+
