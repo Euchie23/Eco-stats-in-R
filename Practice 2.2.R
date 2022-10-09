@@ -3,12 +3,14 @@
 
 #loading libraries ----
 library(dplyr)
-library(tidyverse)
-library(knitr)
+library(tidyr)
+
 
 
 # Preparing data ----
 rairuoho <- read.delim ('https://www.dipintothereef.com/uploads/3/7/3/5/37359245/rairuoho.txt')
+head(rairuoho)
+str(rairuoho)
 
 # Manipulating data ----
 # replacing 'nutrient' with 'enriched' within treatment

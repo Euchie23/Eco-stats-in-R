@@ -11,7 +11,7 @@ filtered2
 filtered3<-filter(iris, Species=="versicolor", Sepal.Width>2.5, Sepal.Length>5.0)
 filtered3
 tail(filtered3)
-filtered3[c(33:35), c(1,3)]# callin out specific rows and columns
+filtered3[c(33:35), c(1,3)]# calling out specific rows and columns
 mutated1<-mutate(iris, Greater.Half= Sepal.Width > 0.5* Sepal.Length)
 table(mutated1$Greater.Half)# to check how many reach the criteria you stated in mutated1 object
 table(iris$.)
