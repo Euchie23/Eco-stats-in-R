@@ -15,8 +15,8 @@ bubbleTdiet<- mutate_at(bubbleTdiet1, vars(time_of_measurement), as.factor)# put
 
 
 # constructing character and numeric vectors (weight loss %) from 'bubbleTdiet'----
-char_vec <- bubbleTdiet0$subjects[c(1:5)]
-num_vec <- as.numeric(round((bubbleTdiet0$before_diet-bubbleTdiet0$after_diet)/bubbleTdiet0$before_diet*100, digits = 0)) # rounding of the decimal points to '0'
+char_vec <- bubbleTdiet0$subjects[c(1:5)] #char_vec <- rownames(bubbleTdiet0)
+num_vec <- as.numeric(round((bubbleTdiet0$after_diet-bubbleTdiet0$before_diet)/bubbleTdiet0$before_diet*100, digits = 0)) # rounding of the decimal points to '0'
 num_vec_p<- paste(num_vec,"%",sep = "")#adding '%' sign to figures
 
 # constructing table with two columns char_vec and num_vec.
