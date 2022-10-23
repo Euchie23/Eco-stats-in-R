@@ -1,0 +1,167 @@
+---
+title: "Practice 5.1"
+author: "Euchie Jn Pierre"
+date: "2022-10-22"
+output: html_document
+---
+
+### This homework is to practice using the leaflet package to make an interactive map. The data used to construct this map was downloaded from my Bryton Ryder 420e, which plotted my recorded ride up Daxueshan National Forest Park (appr. 2400m) in Taichung City, Taiwan. 
+```{r,  eval=T, include=FALSE}
+#loading libraries ----
+library(FITfileR)
+library(tidyr)
+library(dplyr)
+library(leaflet)
+library(grDevices)
+library(RColorBrewer)
+```
+
+
+
+
+
+## **Importing the dataset for manipulation**
+```{r,  eval=T}
+# Preparing data----
+SM_ride <- readFitFile("Data/220827075812.fit")
+SM_ride
+```
+
+
+
+## **Manipulating data**
+### Constructing a dataframe
+```{r,  eval=T, echo=TRUE}
+# Merging all messages into one dataframe----
+SMride_allrecords <- records(SM_ride) %>% 
+  bind_rows() %>% 
+  arrange(timestamp()) %>% 
+  drop_na() 
+head(SMride_allrecords)
+```
+
+### Modifying dataframe
+```{r,  eval=T,echo=TRUE}
+# Plotting a line between pings using nextlat and nextlng, creating new variables and subsetting other variables ----
+SMride_allrecords <- SMride_allrecords %>% 
+  mutate(var = c(1:nrow(SMride_allrecords))) %>% 
+  mutate(nextLat = lead(position_lat), 
+         nextLng = lead(position_long)) %>% 
+  filter(var < nrow(SMride_allrecords)) %>% 
+  select(-var) %>% 
+  mutate(speedRound = round(speed,1)) %>% 
+  mutate(altitudeRound = round(altitude,2)) %>% 
+  mutate(distanceRound = round(distance,1))
+SMride_allrecords[c(1:6),c(10:14)]
+```
+
+### Getting Coordinates
+```{r,  eval=T, echo=TRUE}
+# long and lat coordinates----
+SMride_allcoords <- SMride_allrecords %>% 
+  select(position_long, position_lat)
+head(SMride_allcoords)
+```
+
+## **Constructing interactive map**
+```{r,  eval=T, echo=TRUE}
+#interactive map----
+SMride_allmap <- SMride_allcoords %>% 
+  as.matrix() %>%
+  leaflet(  ) %>%
+  addTiles() %>%
+  addPolylines( )
+SMride_allmap
+```
+
+### Beyond this part is extra-work done to have fun playing with the data, and to construct a more visually interpretable and interactive map.
+
+
+## **Constructing an altitude Map with previous cycling data**
+
+```{r,  eval=T, include=FALSE}
+# Merging all messages into one data frame for altitude map----
+SMride_altrecords <- records(SM_ride) %>% 
+bind_rows() %>% 
+  arrange(timestamp()) %>% 
+  drop_na() 
+SMride_altrecords
+```
+
+```{r,  eval=T, include=FALSE}
+# Modifying dataframe for construction of Altitude map----
+SMride_altrecords <- SMride_altrecords %>% 
+  mutate(var = c(1:nrow(SMride_altrecords))) %>% 
+  mutate(nextLat = lead(position_lat), 
+        nextLng = lead(position_long)) %>% 
+  filter(var < nrow(SMride_altrecords)) %>% 
+  select(-var) %>% 
+  mutate(speedRound = round(speed,1)) %>% 
+  mutate(altitudeRound = round(altitude,2)) %>% 
+  mutate(distanceRound = round(distance,1))
+```
+
+```{r,  eval=T, echo=TRUE}
+# Arrange Unique Speeds In Ascending order----
+altIndex <- SMride_altrecords %>% 
+  select(altitudeRound) %>%
+  unique() %>% 
+  arrange() 
+
+altIndex <- altIndex %>% 
+  mutate(rank = 1:nrow(altIndex))
+head(altIndex)
+```
+
+```{r,  eval=T, echo=TRUE}
+#Assign a color to each unique altitude (blue low, red high)----
+gradientFunction <- colorRampPalette(c("#09387A", 
+                                       "#126CB3",
+                                       "#E9B851",
+                                       "#E98D2B",
+                                       "#E5493A",
+                                       "#B23227"))
+
+colorIndex_alt <- as.data.frame(gradientFunction(nrow(altIndex))) %>% 
+  mutate(rank = 1:nrow(altIndex))
+head(colorIndex_alt)
+```
+
+```{r,  eval=T, echo=TRUE}
+#Preparing color dataframe
+colnames(colorIndex_alt) <- c("color", "rank")
+colorIndex_alt$color <- as.character(colorIndex_alt$color)
+
+#Adding columns to into larger dataframe
+SMride_altrecords <- SMride_altrecords %>% 
+  left_join(altIndex, by = "altitudeRound") %>% 
+  left_join(colorIndex_alt, by = "rank") 
+ SMride_altrecords[c(1:6),c(10:16)]
+```
+
+
+```{r,  eval=T, echo=TRUE}
+#Making an Altitude map---- 
+alt_map <- leaflet() %>% 
+  addTiles() 
+
+
+for(i in 1:nrow(SMride_altrecords)) {
+  alt_map <- addPolylines(map = alt_map,
+                          data = SMride_altrecords,
+                          lng = as.numeric(SMride_altrecords[i, c('position_long', 'nextLng')]),
+                          lat = as.numeric(SMride_altrecords[i, c('position_lat', 'nextLat')]),
+                          color = as.character(SMride_altrecords[i, c('color')])
+  )
+  
+}
+
+alt_map %>%
+  addLegend("bottomright", 
+            colors = c("#09387A",  "#126CB3", "#E9B851", "#E98D2B", "#E5493A","#B23227"),
+            labels = c('0-400m','401-800m','801-1200m', '1201-1600m', '1601-1800m', '1801-2400m'),
+            title = "Altitude",
+            opacity = 1)
+
+
+```
