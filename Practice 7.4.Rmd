@@ -1,0 +1,80 @@
+---
+title: "Practice 7.4"
+author: "Euchie Jn Pierre"
+date: "2022-11-06"
+output: html_document
+---
+
+### This is homework is to practice making a t.test function from scratch to test the difference between means.
+```{r,  eval=T, include=FALSE}
+#loading libraries ----
+library(dplyr)
+library(tidyr)
+```
+
+
+
+## **Importing the dataset using URL for reproducibility**
+```{r,  eval=T}
+# Preparing data----
+rairuoho <- read.table('https://www.dipintothereef.com/uploads/3/7/3/5/37359245/rairuoho.txt',header=T, sep='\t', dec = '.')
+head(rairuoho)
+```
+
+
+
+
+## **Manipulating data (Part 1)**
+```{r,  eval=T, echo=TRUE}
+# replacing 'nutrient' with 'enriched' within treatment and making the treatment colum as.factor----
+# shifting values under day3-day8 to a new column called 'length and adding 'day' column names to a new column---'
+# uniting 'spatial1' and 'spatial2' columns into one column to make 'spatial coordinates'----
+# deleting 'row' and 'column'----
+# adding new column called treatment_no,(as.numeric) to the dataframe.====
+rairuoho_1 <-rairuoho %>% mutate(treatment = as.factor(replace(treatment, treatment == 'nutrient', 'enriched')))%>%pivot_longer(day3:day8,names_to = "day", values_to = "length")%>%  unite("spatial coordinates", spatial1:spatial2, sep = "_")%>% dplyr::select(-row, -column)
+head(rairuoho_1)
+```
+
+
+
+## **Manipulating data(Part 2)**
+```{r,  eval=T, echo=TRUE}
+# adding new column called treatment_no,(as.numeric) to the dataframe.====
+
+rairuoho_1 <-rairuoho_1%>% mutate(treatment_no=as.numeric(rairuoho_1$treatment), .after=treatment)
+head(rairuoho_1)
+```
+
+
+
+
+### **Making the t.test function**
+```{r,  eval=T, echo=TRUE}
+#making function to calculate t.score and p-value
+my.t.test <- function(x, y){
+  xy.1<-c()
+  y.1<-c()
+  x.1<-c()
+  y.2<-c()
+  x.2<-c()
+  for (i in 1:length(x))  {
+    x.1[i] <- x[i]-mean(x,na.rm=TRUE)
+    x.2[i] <- x.1[i]^2
+    for (j in 1:length(y))   {
+      y.1[j] <- y[j]-mean(y,na.rm = TRUE)
+      y.2[j] <- y.1[j]^2
+      xy.1[i] <- x.1[i]*y.1[i]
+    }
+  }
+  r<-sum(xy.1)/sqrt(sum(x.2)*sum(y.2))
+  t<-r*sqrt((length(xy.1)-2)/(1-r^2))
+  pval <- 2*pt(q=t, length(x) + length(y)-2)
+   if (pval<=0.05) {
+     print(paste("The difference in means is statistically significant, null hypothesis rejected"))
+  } else{
+     print(paste("The difference in means is NOT statistically significant, alternative hypothesis rejected"))
+  }
+  return(paste("t.score =", round(t, 3), ("   "),(paste("p-value =",abs(round(pval, 10))))))
+}
+my.t.test(rairuoho_1$length, rairuoho_1$treatment_no)
+```
