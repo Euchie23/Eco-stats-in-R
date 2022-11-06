@@ -1,7 +1,7 @@
+#loading libraries----
+library(ggplot2)
+library (gganimate)
 
-# WRONG CODE
-# ADVICES: START FROM SCRATCH, 
-# JUST GET INSPIRATION FROM MY CODE, WORK STEP BY STEP
 grow<-function(start_1,start_2){
   num_gen<-30
   N1 <- rep(0,10)
@@ -31,12 +31,29 @@ if (N2[1]>0){
 }
 
   par(mar=c(9,4,1,1),mfrow=c(3,1),las=1)
-  
+
   grow(1,0)
   text(4,110,"Species 1 alone")
   
   grow(0,1)
   text(4,110,"Species 2 alone")
   
-  grow(1,2)
+  grow(2.5,2)
   text(6,110,"Both Species competing")
+  
+  
+  LV<-NULL
+  LV$spe_1<-N1
+  LV$spe_2<-N2
+  LV$generation<-generation
+  LV<-as.data.frame(LV)
+  
+  p <- ggplot(LV, aes(x = generation, y=spe_1, size =2)) +
+    geom_point(show.legend = FALSE, alpha = 0.7) +
+    scale_color_viridis_d() +
+    scale_size(range = c(0, 12)) +
+    labs(x = "Generation", y = "Individuals")
+  
+  p + transition_time(generation) +
+    labs(title = "Generation: {frame_time}") +
+    shadow_wake(wake_length = 0.2, alpha = FALSE)
