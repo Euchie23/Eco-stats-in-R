@@ -395,40 +395,29 @@ head(rairuoho)</code></pre>
 ## 5   5      1
 ## 6   6      1</code></pre>
 </div>
-<div id="manipulating-data-part-1" class="section level2">
-<h2><strong>Manipulating data (Part 1)</strong></h2>
+<div id="manipulating-data" class="section level2">
+<h2><strong>Manipulating data</strong></h2>
 <pre class="r"><code># replacing &#39;nutrient&#39; with &#39;enriched&#39; within treatment and making the treatment colum as.factor----
 # shifting values under day3-day8 to a new column called &#39;length and adding &#39;day&#39; column names to a new column---&#39;
 # uniting &#39;spatial1&#39; and &#39;spatial2&#39; columns into one column to make &#39;spatial coordinates&#39;----
 # deleting &#39;row&#39; and &#39;column&#39;----
 # adding new column called treatment_no,(as.numeric) to the dataframe.====
-rairuoho_1 &lt;-rairuoho %&gt;% mutate(treatment = as.factor(replace(treatment, treatment == &#39;nutrient&#39;, &#39;enriched&#39;)))%&gt;%pivot_longer(day3:day8,names_to = &quot;day&quot;, values_to = &quot;length&quot;)%&gt;%  unite(&quot;spatial coordinates&quot;, spatial1:spatial2, sep = &quot;_&quot;)%&gt;% dplyr::select(-row, -column)
+rairuoho_1 &lt;-rairuoho %&gt;% mutate(treatment = as.factor(replace(treatment, treatment == &#39;nutrient&#39;, &#39;enriched&#39;)))%&gt;%  unite(&quot;spatial coordinates&quot;, spatial1:spatial2, sep = &quot;_&quot;)%&gt;% dplyr::select(-row, -column)%&gt;% mutate(treatment_no= as.numeric(treatment), .after=treatment)
 head(rairuoho_1)</code></pre>
-<pre><code>## # A tibble: 6 × 6
-##   germinate bed    treatment `spatial coordinates` day   length
-##       &lt;int&gt; &lt;chr&gt;  &lt;fct&gt;     &lt;chr&gt;                 &lt;chr&gt;  &lt;int&gt;
-## 1        18 paper4 enriched  upper_left            day3       2
-## 2        18 paper4 enriched  upper_left            day4      13
-## 3        18 paper4 enriched  upper_left            day5      34
-## 4        18 paper4 enriched  upper_left            day6      85
-## 5        18 paper4 enriched  upper_left            day7     112
-## 6        18 paper4 enriched  upper_left            day8     121</code></pre>
-</div>
-<div id="manipulating-datapart-2" class="section level2">
-<h2><strong>Manipulating data(Part 2)</strong></h2>
-<pre class="r"><code># adding new column called treatment_no,(as.numeric) to the dataframe.====
-
-rairuoho_1 &lt;-rairuoho_1%&gt;% mutate(treatment_no=as.numeric(rairuoho_1$treatment), .after=treatment)
-head(rairuoho_1)</code></pre>
-<pre><code>## # A tibble: 6 × 7
-##   germinate bed    treatment treatment_no `spatial coordinates` day   length
-##       &lt;int&gt; &lt;chr&gt;  &lt;fct&gt;            &lt;dbl&gt; &lt;chr&gt;                 &lt;chr&gt;  &lt;int&gt;
-## 1        18 paper4 enriched             1 upper_left            day3       2
-## 2        18 paper4 enriched             1 upper_left            day4      13
-## 3        18 paper4 enriched             1 upper_left            day5      34
-## 4        18 paper4 enriched             1 upper_left            day6      85
-## 5        18 paper4 enriched             1 upper_left            day7     112
-## 6        18 paper4 enriched             1 upper_left            day8     121</code></pre>
+<pre><code>##   day3 day4 day5 day6 day7 day8 germinate    bed treatment treatment_no
+## 1    2   13   34   85  112  121        18 paper4  enriched            1
+## 2    5   22   60   95  108  116        19 mould1  enriched            1
+## 3    5   26   34   73   96  111        18 paper8  enriched            1
+## 4    7   24   61   91  101  117        17 mould2  enriched            1
+## 5    0    9   31   61   92  116        12 paper4  enriched            1
+## 6    7   30   66   91  116  129        18 mould1  enriched            1
+##   spatial coordinates
+## 1          upper_left
+## 2          upper_left
+## 3          upper_left
+## 4          upper_left
+## 5          lower_left
+## 6          lower_left</code></pre>
 <div id="making-the-t.test-function" class="section level3">
 <h3><strong>Making the t.test function</strong></h3>
 <pre class="r"><code>#making function to calculate t.score and p-value
@@ -438,28 +427,132 @@ my.t.test &lt;- function(x, y){
   x.1&lt;-c()
   y.2&lt;-c()
   x.2&lt;-c()
-  for (i in 1:length(x))  {
-    x.1[i] &lt;- x[i]-mean(x,na.rm=TRUE)
-    x.2[i] &lt;- x.1[i]^2
-    for (j in 1:length(y))   {
-      y.1[j] &lt;- y[j]-mean(y,na.rm = TRUE)
-      y.2[j] &lt;- y.1[j]^2
-      xy.1[i] &lt;- x.1[i]*y.1[i]
+  if (class(x) != &quot;numeric&quot;) {
+    x &lt;- as.numeric(x)
+    for (i in 1:length(x))  {
+      x.1[i] &lt;- x[i]-mean(x,na.rm=TRUE)
+      x.2[i] &lt;- x.1[i]^2 }
+  }else{
+    for (i in 1:length(x))  {
+      x.1[i] &lt;- x[i]-mean(x,na.rm=TRUE)
+      x.2[i] &lt;- x.1[i]^2
     }
   }
+  if (class(y) != &quot;numeric&quot;) {
+    y &lt;- as.numeric(y)  
+    for (j in 1:length(y))   {
+      y.1[j] &lt;- y[j]-mean(y,na.rm = TRUE)
+      y.2[j] &lt;- y.1[j]^2}
+  } else {
+    for (j in 1:length(y))   {
+      y.1[j] &lt;- y[j]-mean(y,na.rm = TRUE)
+      y.2[j] &lt;- y.1[j]^2}
+  }
+  for (i in 1:length(x.1)) {
+    for (j in 1:length(y.1)) 
+      xy.1[i] &lt;- x.1[i]*y.1[i]
+  }
+  df &lt;- (length(x) + length (y) -2)
   r&lt;-sum(xy.1)/sqrt(sum(x.2)*sum(y.2))
   t&lt;-r*sqrt((length(xy.1)-2)/(1-r^2))
-  pval &lt;- 2*pt(q=t, length(x) + length(y)-2)
-   if (pval&lt;=0.05) {
-     print(paste(&quot;The difference in means is statistically significant, null hypothesis rejected&quot;))
+  pval &lt;- 2*pt(-abs(t), df)
+  if (pval&lt;= 0.05) {
+    print(paste(&quot;The difference in means is statistically significant, null hypothesis rejected&quot;))
   } else{
-     print(paste(&quot;The difference in means is NOT statistically significant, alternative hypothesis rejected&quot;))
+    print(paste(&quot;The difference in means is NOT statistically significant, alternative hypothesis rejected&quot;))
   }
-  return(paste(&quot;t.score =&quot;, round(t, 3), (&quot;   &quot;),(paste(&quot;p-value =&quot;,abs(round(pval, 10))))))
+  return(paste(&quot;t.score =&quot;, round(t, 4), (&quot;   &quot;),(paste(&quot;df =&quot;, df)),(&quot;   &quot;),(paste(&quot;p-value =&quot;, round(pval, 10)))))
 }
-my.t.test(rairuoho_1$length, rairuoho_1$treatment_no)</code></pre>
+my.t.test(rairuoho_1$day3, rairuoho_1$treatment_no)</code></pre>
 <pre><code>## [1] &quot;The difference in means is NOT statistically significant, alternative hypothesis rejected&quot;</code></pre>
-<pre><code>## [1] &quot;t.score = -1.186     p-value = 0.2361354794&quot;</code></pre>
+<pre><code>## [1] &quot;t.score = 0.6474     df = 94     p-value = 0.5189725642&quot;</code></pre>
+<pre class="r"><code>t.test(day3 ~ treatment_no, data = rairuoho_1, var.equal=T )</code></pre>
+<pre><code>## 
+##  Two Sample t-test
+## 
+## data:  day3 by treatment_no
+## t = -0.64737, df = 46, p-value = 0.5206
+## alternative hypothesis: true difference in means between group 1 and group 2 is not equal to 0
+## 95 percent confidence interval:
+##  -2.225903  1.142570
+## sample estimates:
+## mean in group 1 mean in group 2 
+##        3.583333        4.125000</code></pre>
+<pre class="r"><code>my.t.test(rairuoho_1$day4, rairuoho_1$treatment_no)</code></pre>
+<pre><code>## [1] &quot;The difference in means is NOT statistically significant, alternative hypothesis rejected&quot;</code></pre>
+<pre><code>## [1] &quot;t.score = -0.0387     df = 94     p-value = 0.9692241799&quot;</code></pre>
+<pre class="r"><code>t.test(day4 ~ treatment_no, data = rairuoho_1, var.equal=T )</code></pre>
+<pre><code>## 
+##  Two Sample t-test
+## 
+## data:  day4 by treatment_no
+## t = 0.038684, df = 46, p-value = 0.9693
+## alternative hypothesis: true difference in means between group 1 and group 2 is not equal to 0
+## 95 percent confidence interval:
+##  -4.252833  4.419500
+## sample estimates:
+## mean in group 1 mean in group 2 
+##        19.12500        19.04167</code></pre>
+<pre class="r"><code>my.t.test(rairuoho_1$day5, rairuoho_1$treatment_no)</code></pre>
+<pre><code>## [1] &quot;The difference in means is NOT statistically significant, alternative hypothesis rejected&quot;</code></pre>
+<pre><code>## [1] &quot;t.score = -0.4499     df = 94     p-value = 0.6538301095&quot;</code></pre>
+<pre class="r"><code>t.test(day5 ~ treatment_no, data = rairuoho_1, var.equal=T )</code></pre>
+<pre><code>## 
+##  Two Sample t-test
+## 
+## data:  day5 by treatment_no
+## t = 0.44988, df = 46, p-value = 0.6549
+## alternative hypothesis: true difference in means between group 1 and group 2 is not equal to 0
+## 95 percent confidence interval:
+##  -6.514234 10.264234
+## sample estimates:
+## mean in group 1 mean in group 2 
+##        50.04167        48.16667</code></pre>
+<pre class="r"><code>my.t.test(rairuoho_1$day6, rairuoho_1$treatment_no)</code></pre>
+<pre><code>## [1] &quot;The difference in means is NOT statistically significant, alternative hypothesis rejected&quot;</code></pre>
+<pre><code>## [1] &quot;t.score = -1.2043     df = 94     p-value = 0.231486794&quot;</code></pre>
+<pre class="r"><code>t.test(day6 ~ treatment_no, data = rairuoho_1, var.equal=T )</code></pre>
+<pre><code>## 
+##  Two Sample t-test
+## 
+## data:  day6 by treatment_no
+## t = 1.2043, df = 46, p-value = 0.2346
+## alternative hypothesis: true difference in means between group 1 and group 2 is not equal to 0
+## 95 percent confidence interval:
+##  -3.189083 12.689083
+## sample estimates:
+## mean in group 1 mean in group 2 
+##        79.45833        74.70833</code></pre>
+<pre class="r"><code>my.t.test(rairuoho_1$day7, rairuoho_1$treatment_no)</code></pre>
+<pre><code>## [1] &quot;The difference in means is statistically significant, null hypothesis rejected&quot;</code></pre>
+<pre><code>## [1] &quot;t.score = -2.7786     df = 94     p-value = 0.0065923026&quot;</code></pre>
+<pre class="r"><code>t.test(day7 ~ treatment_no, data = rairuoho_1, var.equal=T )</code></pre>
+<pre><code>## 
+##  Two Sample t-test
+## 
+## data:  day7 by treatment_no
+## t = 2.7786, df = 46, p-value = 0.007878
+## alternative hypothesis: true difference in means between group 1 and group 2 is not equal to 0
+## 95 percent confidence interval:
+##   3.111675 19.471659
+## sample estimates:
+## mean in group 1 mean in group 2 
+##        99.50000        88.20833</code></pre>
+<pre class="r"><code>my.t.test(rairuoho_1$day8, rairuoho_1$treatment_no)</code></pre>
+<pre><code>## [1] &quot;The difference in means is statistically significant, null hypothesis rejected&quot;</code></pre>
+<pre><code>## [1] &quot;t.score = -4.2038     df = 94     p-value = 5.98149e-05&quot;</code></pre>
+<pre class="r"><code>t.test(day8 ~ treatment_no, data = rairuoho_1, var.equal=T )</code></pre>
+<pre><code>## 
+##  Two Sample t-test
+## 
+## data:  day8 by treatment_no
+## t = 4.2038, df = 46, p-value = 0.0001197
+## alternative hypothesis: true difference in means between group 1 and group 2 is not equal to 0
+## 95 percent confidence interval:
+##   8.316973 23.599693
+## sample estimates:
+## mean in group 1 mean in group 2 
+##        115.3333         99.3750</code></pre>
 </div>
 </div>
 
