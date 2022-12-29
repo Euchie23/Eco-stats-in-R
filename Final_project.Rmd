@@ -1,0 +1,139 @@
+---
+title: "Final_Project"
+author: "Euchie Jn Pierre"
+date: "2022-12-29"
+output: html_document
+---
+
+## **Introduction**
+
+Coral reefs provide cover for many important fish species that help maintain ecological balance (Sano et al. 1987, Sano 2000, Pratchett 2007).  It is worth mentioning that biologically diverse communities ecologically emphasize functional redundancy, where species with the same function can support absent species or species undergoing recovery to not only maintain a properly functioning ecosystem but to maximize the biomass of species in that ecosystem (Lefcheck et al. 2021). There are many coral reef communities all over the world that contain many different species. For example, reef fish communities in the Caribbean region can contain anywhere from about 500-700 species, whereas, in the central pacific, they can range from 3000 species and over (Goldman & Talbot 1976). Many different studies have compared species richness and abundance of reef fish within-habitat and between habitats on a continental to regional scale (Goldman & Talbot 1976,Lefcheck et al. 2021,Sano et al. 1987) . However, a comparison of species abundance and richness between the 12 global realms has yet to be analyzed. As a result, this project seeks to compare the species richness across the different realms around the world. It is worth noting that species richness in a sample can greatly be influenced by sample size and sample effort of researchers based on certain factors within a realm. For instance, the sampling effort in the Arctic realm might be way less than the sampling effort in the tropics due to the sub-zero temperatures restricting divers.  In order to make a fair comparison and assessment of the diversities across the multiple abundance counts within each of the 12 realms, rarefaction will be used to standardize the larger samples until they contain the same number of observed individuals or observations as the smallest sample. The objectives of this project are to: determine which of the 11 realms has the lowest and the highest number of individuals observed standardized to the same area. Determining the lowest and richest realm, in terms of species, after standardizing per number of individuals, and determining the lowest and richest realms after standardizing according to sample coverage.
+
+
+
+## **Methodology**
+
+The dataset for this project focuses on the systematic global assessment of reef fish communities by the Reef Life Survey program, which was collected by Graham J Edgar and Rick D Stuart-Smith in 2014. In the original dataset, the authors recorded the abundance of 2367 reef fish species across 11 realms. Other information such as the family the species came from, and the transects, sites, countries, and ecoregions where they were found were also recorded (15 columns and 134759 rows).  This dataset was manipulated to contain only the 11 realms and accumulated abundances for the 2367 distinct reef fish species. This was to carry out our rarefaction and extrapolation for the abundance of species across the 11 realms. This analysis was done using the iNEXT package by Anne Chao (Chao et al.2014) in the R software (Version 2022.12.0+353 (2022.12.0+353).
+
+After manipulating the dataset, the integrated sample-sized-based rarefaction and extrapolation Hill numbers for each of the realms were calculated then integrated curves were constructed according to the base sample size. The base sample size is double the smallest reference sample size out of the 11 assemblages.Constructing the sampling curve allows for reliable comparisons for any sample size up to an abundance of the base sample size. 
+
+The coverage-based diversities of the 11 realms were then compared for species richness (q=0), Shannon diversity (q=1), and Simpson's diversity (q=2) according to the ‘‘base coverage’’ which is the lowest coverage for doubled reference sample sizes. The coverage refers to the total relative abundances of the observed species, or the proportion of the total number of individuals in an assemblage that belong to species represented in the sample.
+
+```{r,  eval=T, include=FALSE}
+#loading libraries ----
+library(readr)
+library(dplyr)
+library (iNEXT)
+library(ggplot2)
+library(scales)
+```
+
+
+## **Importing the dataset**
+```{r,  eval=T}
+# Preparing data----
+reef_0 <- read_csv("/Users/mrnobody/Documents/NTU Third Semester/Eco stats in Rproj/reef_fish.csv",show_col_types = FALSE)
+reef_0 <- as.data.frame(reef_0)
+head(reef_0)
+```
+
+
+## **Manipulating data**
+```{r,  eval=T, echo=TRUE, message=FALSE}
+reef_1 <- reef_0[,c('Realm','Taxon','Total')]
+reef_2<-reef_1 %>%
+  group_by(Taxon,Realm) %>%
+dplyr::summarise(Total = sum(Total))
+```
+
+
+```{r,  eval=T, echo=TRUE}
+reef_3 <-reef_2%>%
+  group_by(Taxon, Realm) %>%
+  mutate(row =row_number()) %>%
+  tidyr::pivot_wider(names_from = Realm, values_from = Total) %>%
+  select(-row) %>%
+  replace(is.na(.), 0) %>%
+  as.data.frame()
+reef_fish <- reef_3[,-1]
+rownames(reef_fish) <- reef_3[,1] 
+dim(reef_fish)
+head(reef_fish)
+```
+
+## **Results**
+
+After comparing the 11 assemblages (realms) with Hill number order q = 0, 1, 2.  The basic data information (See table below) revealed that the lowest number of individuals observed among the 11 realms was 18 individuals from the Arctic realm. Whereas, the highest was 1,498,462 individuals from the Temperate Australasia region. The lowest richness observed among the 11 assemblages standardized to the same area was 5 species, which again came from the Artic realm. However, for the highest richness observed, the Central Indo-Pacific topped the realms with 1146 species. 
+```{r,  eval=T}
+# Specifying series of samples sizes for quicker calculation using bootstrapping ----
+m <- c(1, 25000, 50000, 100000, 150000, 200000, 250000)
+# to return basic data information including the reference sample size (n), observed species richness (S.obs), sample coverage estimate for the reference sample (SC), and the first ten frequency counts (f1‐f10)
+rf.raref<-iNEXT(reef_fish,q=c(0,1,2), datatype="abundance", size=m)
+rf.raref$DataInfo
+```
+
+After comparing sample-size-based sampling curves according to the base sample size. In this project the base sample size is 36 (double the sample size from the Artic realm which is 18) (see below table). For each of the 11 realms, the integrated sample-size based rarefaction and extrapolation curves (See below plots) for Hill revealed that species richness (q=0) after standardizing per number of individuals (36) increases with sample size for almost all the assemblages except the Arctic, Temperate South America, Temperate South Africa and the Temperate Northern Pacific realms indicating that these realms had the lowest species richness of all the 11 realms whereas, Central Indo Pacific and Temperate Australasia dominated in terms of species richness. Furthermore, the curves for Shannon and Simpson diversity (q=1 and q= 2 respectively) leveled off just beyond the reference sample 36 indicating that that the higher order Hill numbers are less sensitive to sampling effects since they are influenced by the frequency of the more common species.
+
+```{r,  eval=T}
+# calculating the diversity estimates for the minimum among all doubled reference sample sizes. 
+rf.indi0 <- estimateD (reef_fish, data = 'abundance', base = 'size', level = NULL)
+rf.indi <- rf.indi0[rf.indi0$Order.q == '0',]
+rf.indi
+# choose species richness (q = 0); the other values refer to Shannon and Simpson diversity (q = 1 and q = 2, respectively)
+```
+
+```{r,  eval=T, fig.height=5, fig.width=15}
+# Plotting the rarefaction curves
+par (mfrow = c(1,3))
+plot (rf.raref, type = 1)
+```
+
+
+After calculating the coverage-based diversities of the 11 assemblages for q=0 , q=1, and the coverage-based sampling curves based on a ‘‘base coverage’’, which is the lowest coverage for doubled reference sample sizes or the maximum coverage for reference samples, For this project the base sample coverage up to 99% (See below "rf.cove" data information) for Hill revealed that species richness in the Central Indo Pacific realm was significantly higher than in any other realm for any standardized sample coverage up to 99% followed by Temperate Australasia. However,for Shannon diversity (q=1),and Simpson diversity (q=2) although the Central Indo Pacific realm was the most diverse of the 11 realms, The Eastern Indo-Pacific came in second place with Temperate Australasia falling to third place (q=1) and forth place (q=2). 
+```{r,  eval=T, fig.height=5, fig.width=15}
+# calculating the diversity estimates for the minimum among the coverage values for samples extrapolated to double the size of the reference sample. 
+rf.cove0 <- estimateD (reef_fish, data = 'abundance', base = 'coverage', level = NULL)
+rf.cove <- rf.cove0[rf.cove0$Order.q == '0',]
+rf.cove
+plot (rf.raref, type = 2)
+par (mfrow = c(1,3))
+plot (rf.raref, type = 3)
+```
+
+## **Discussion**
+
+In order to better explain the results received earlier, it is worth mentioning that reef fish richness increases with coral diversity. There is evidence of a significant positive correlation between the two variables (r = 0.65, p < 0.0001)(Strona G et al. 2021). Reef fish species, such as obligate corallivores (Sano et al. 1987, Sano 2000, Pratchett 2007) thrive in coral structures that are topographically or structurally complex. This is because the complexity in structures serves as a place of refuge (sano 2000). This goes on to show that reef fish are vulnerable to coral loss which varies per region or realm. Some realms have very complex coral structures which are usually threatened by environmental disturbances like storms or anthropogenic practices such as coastal developments. The highest vulnerability of reef fish species was detected in the central Pacific due to the significant amount of coral loss experienced. However, in the western Indian, central Indo-Pacific, and tropical eastern Pacific vulnerability was rated as intermediate,  with the western Atlantic being moderate (Strona G et al. 2021). The complex coral structures can partially help to explain why these realms, specifically the central indo-pacific harbors thousands of different species of reef fish, helping to increase their species richness and diversity. More research would be needed to factor in other variables that would negatively or positively influence species richness and diversity. These may include but wont be  limited to water temperature, salinity, PH, distance from coastline, depth and maybe human activities.
+
+
+
+## **Conclusion**
+
+In determining which of the 11 realms has the lowest and the highest number of individuals observed standardized to the same area, which has lowest and richest realm, in terms of species, after standardizing per number of individuals, and which has the lowest and richest realms after standardizing according to sample coverage. We can conclude that the central indo-pacific, followed by Temperate Australasia and the Eastern indo-pacific revealed the highest reef fish species richness and diversity, whereas, The Arctic revealed the lowest followed by Temperate Northern Pacific, Temperate Southern America and Temperate South Africa.
+
+## Future implications:
+The results of this project can help to properly monitor realms in other to save species that are about to go extinct and maybe learn from those realms, based on the management practices that they use in other to increase species diversity. From this project, based on the results, I can suggest that this data can be used to build a predictive model for species richness and diversity especially in the face of climate change which has already started to adversely affect coral structures. This can  in-turn lead to reef fish species abundance and diversity decline. A predictive model could help stakeholders act ahead of time to save species via mitigation or adaptation practices.  
+
+
+## **Acknowledgements**
+
+I would like to thank Dr Vianney Denis and his lab teaching assistants for their patience and edification throughout the semester, and for providing the data set by Graham J Edgar and Rick D Stuart-Smith,  titled, "the systematic global assessment of reef fish communities by the Reef Life Survey program".
+
+## **References**
+
+Chao, A., Gotelli, N.J., Hsieh, T.C., Sander, E.L., Ma, K.H., Colwell, R.K. & Ellison, A.M. (2014) Rarefaction and extrapolation with Hill numbers: a framework for sampling and estimation in species diversity studies. Ecological Monographs, 84, 45–67.
+
+Goldman, B. and Talbot, F.I. (1976) Aspects of ecology of the coral reef fishes. In: Jones, O.A. and Endean, R., Eds., Biology and Geology of Coral Reefs, Academic Press, New York, 125-154.
+
+Lefcheck, J.S., Edgar, G.J., Stuart-Smith, R.D. et al. Species richness and identity both determine the biomass of global reef fish communities. Nat Commun 12, 6875 (2021). https://doi.org/10.1038/s41467-021-27212-9
+
+Pratchett MS (2007) Dietary selection by coral-feeding butterflyfishes (Chaetodontidae) on the Great Barrier Reef,
+Australia. Raffles Bull Zool S14:171–176
+
+Sano M, Shimizu M, Nose Y (1987) Long-term effects of destruction of hermatypic corals by Acanthaster planci infestation on reef fish communities at Iriomote Island, 
+Japan. Mar Ecol Prog Ser 37:191–199
+
+Sano M (2000) Stability of reef fish assemblages: responses to coral recovery after catastrophic predation by Acanthaster planci. Mar Ecol Prog Ser 198:121–130
+
+Strona G et al. 2021 Global tropical reef fish richness could decline by
+around half if corals are lost. Proc. R. Soc. B288: 20210274.
+https://doi.org/10.1098/rspb.2021.0274
