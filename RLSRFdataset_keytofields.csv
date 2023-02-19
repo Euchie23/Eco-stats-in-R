@@ -1,0 +1,16 @@
+Data field,Description,Values
+SiteCode,Identifier of unique geographical coordinates,Usually 2-3 letters followed by numeric string
+Site,Descriptive name of the site,
+SiteLat,Latitude of site (WGS84),Decimal degrees
+SiteLong,Longitude of site (WGS84),Decimal degrees
+Country,Country (or largely-autonomous state),
+Ecoregion,Location within the Marine Ecoregions of the World provided in Spalding et al.13,
+Realm,Biogeographic realm as classified in the Marine Ecoregions of the World13,
+SurveyID,Identifier of individual 50 m transects,Numeric string
+Depth,Mean depth of transect line as recorded on dive computer (note: this does not account for tide or deviations from the mean value as a consequence of imperfect tracking of the depth contour along the bottom),metres
+SurveyDate,Date of survey,(dd-month-yy)
+Diver,Initials of the diver who collected the datum,Two to four letter unique identifier
+Taxon,"Species name, corrected for recent taxonomic changes and grouping of records not at species level",
+Family,Taxonomic family,
+Block,Identifies which 5 m wide block (of two) within each complete transect (surveyID),"Values = 1 (block on deeper/offshore side of transect line) , 2 (block on shallower/inshore side)"
+Total,"Total abundance for record on that block, transect, site, date combination",Numeric string

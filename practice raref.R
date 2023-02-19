@@ -1,0 +1,7 @@
+data('spider')
+iNEXT(spider, q=c(0,1,2), datatype="abundance")
+ggiNEXT(spider, type=1, se=TRUE, grey=FALSE)
+data('bird')
+iNEXT(bird, q=c(0,1,2), datatype="abundance")
+bird.area <- sapply (spider, FUN = function (x) sum (colSums (x)>0))
+#b.indi0 <- estimateD (spider, data = 'abundance', base = 'size', conf = NULL)
