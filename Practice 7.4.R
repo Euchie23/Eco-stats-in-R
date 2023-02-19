@@ -42,10 +42,10 @@ my.t.test <- function(x, y){
     for (j in 1:length(y.1)) 
       xy.1[i] <- x.1[i]*y.1[i]
   }
-  df <- (length(x) + length (y) -2)
+  df <- (length(x)/2 + length(y)/2)-2
   r<-sum(xy.1)/sqrt(sum(x.2)*sum(y.2))
   t<-r*sqrt((length(xy.1)-2)/(1-r^2))
-  pval <- 2*pt(abs(t), df)
+  pval <- 2*pt(-abs(t), df)
   if (pval<= 0.05) {
     print(paste("The difference in means is statistically significant, null hypothesis rejected"))
   } else{
@@ -59,11 +59,9 @@ my.t.test(rairuoho_1$day5, rairuoho_1$treatment_no)
 my.t.test(rairuoho_1$day6, rairuoho_1$treatment_no)
 my.t.test(rairuoho_1$day7, rairuoho_1$treatment_no)
 my.t.test(rairuoho_1$day8, rairuoho_1$treatment_no)
-t.test(day7 ~ treatment_no, data = rairuoho_1, var.equal=T )
-#sleep$group<- as.numeric(sleep$group)
-data(sleep)
+t.test(rairuoho_1$day8, rairuoho_1$day3)
+t.test(rairuoho_1$day4 ~ rairuoho_1$day3)
 
-#x <-  sleep$extra
-#y <-sleep$group
-t.test(extra ~ group, data = sleep, var.equal=T )
-my.t.test(sleep$extra,sleep$group)
+my.t.test(rairuoho_1$day8, rairuoho_1$day3)
+x<- rairuoho_1$day8
+y<- rairuoho_1$day3
